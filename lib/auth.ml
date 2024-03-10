@@ -12,6 +12,8 @@ let from_file ?(filename=default_filename) () =
   close_in ch;
   {api_key; secret}
 
+let auth () = from_file ()
+
 let sign auth timestamp method_ path body =
   let text = Datetime.to_string timestamp ^ method_ ^ path ^ body in
   let secret = auth.secret in
