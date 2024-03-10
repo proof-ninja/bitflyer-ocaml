@@ -1,4 +1,4 @@
 (library
  (name bitflyer)
  (libraries ; lwt h2 h2-lwt-unix
- cohttp cohttp-lwt-unix hacl-star yojson hex))
+ cohttp cohttp-lwt-unix hacl-star yojson hex dolog))

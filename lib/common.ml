@@ -5,5 +5,6 @@ type order =
 type side = Buy | Sell
 
 let (!%) s = Printf.sprintf s
+module Log = Dolog.Log
 
 let host = "api.bitflyer.com"

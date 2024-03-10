@@ -14,8 +14,11 @@ depends: [
   "dune" {>= "3.4"}
   "cohttp"
   "lwt"
+  "cohttp-lwt-unix"
   "yojson"
   "hacl-star"
+  "hex"
+  "dolog"
   "odoc" {with-doc}
 ]
 build: [

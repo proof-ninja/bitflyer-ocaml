@@ -7,3 +7,4 @@ val (!%) :  ('a, unit, string) format -> 'a
 type side = Buy | Sell
 
 val host : string
+module Log = Dolog.Log

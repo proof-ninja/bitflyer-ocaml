@@ -19,7 +19,7 @@
  (name bitflyer)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune cohttp lwt yojson hacl-star)
+ (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson hacl-star hex dolog)
  (tags
   (topics "to describe" your project)))
 
