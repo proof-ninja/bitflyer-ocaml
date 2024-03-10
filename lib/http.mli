@@ -1,5 +1,3 @@
-val get : ?headers:(string * string) list ->
-          string -> string -> (string * string) list -> string Lwt.t
+val get : ?headers:(string * string) list -> Uri.t -> string Lwt.t
 
-val post : ?headers:(string* string) list ->
-           string -> string -> string -> string Lwt.t
+val post : ?headers:(string * string) list -> Uri.t -> string -> string Lwt.t

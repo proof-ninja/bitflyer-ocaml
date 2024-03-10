@@ -1,3 +1,5 @@
+open Common
+
 let default_filename = "bitflyer-auth.conf"
 
 type t = {
@@ -21,10 +23,12 @@ let sign auth timestamp method_ path body =
     ~key:(Bytes.of_string secret) ~msg:(Bytes.of_string text)
   |> Hex.of_bytes
   |> Hex.show
+  |> fun s -> Log.debug "Auth.sign: '%s' ==> '%s'" text s; s
 
 
-let make_header auth timestamp meth path body =
-    let s = sign auth timestamp meth path body in
+let make_header auth meth path body =
+  let timestamp = Datetime.now () in
+  let s = sign auth timestamp meth path body in
     [
       ("ACCESS-KEY", auth.api_key);
       ("ACCESS-TIMESTAMP", Datetime.to_string timestamp);

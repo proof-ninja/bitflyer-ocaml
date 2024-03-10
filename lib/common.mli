@@ -1,10 +1,13 @@
-type order =
+type product_code = string
+
+type order_type =
   | Market
-  | Limit of int
+  | Limit of float
 
 val (!%) :  ('a, unit, string) format -> 'a
 
 type side = Buy | Sell
+val side_of_string : string -> side
 
-val host : string
 module Log = Dolog.Log
+module Json = Yojson.Basic
