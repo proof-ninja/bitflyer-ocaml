@@ -17,7 +17,9 @@ let from_file ?(filename=default_filename) () =
 let auth () = from_file ()
 
 let sign auth timestamp method_ path body =
-  let text = Datetime.to_string timestamp ^ method_ ^ path ^ body in
+  let text =
+    !%"%d%s%s%s" (Datetime.to_millisec timestamp) method_ path body
+  in
   let secret = auth.secret in
   Hacl_star.EverCrypt.HMAC.mac ~alg:SHA2_256
     ~key:(Bytes.of_string secret) ~msg:(Bytes.of_string text)
@@ -31,7 +33,6 @@ let make_header auth meth path body =
   let s = sign auth timestamp meth path body in
     [
       ("ACCESS-KEY", auth.api_key);
-      ("ACCESS-TIMESTAMP", Datetime.to_string timestamp);
+      ("ACCESS-TIMESTAMP", !%"%d" (Datetime.to_millisec timestamp));
       ("ACCESS-SIGN", s);
-      ("Content-Type", "application/json");
-    ]
+      ("Content-Type", "application/json");]

@@ -1,3 +1,5 @@
 type t
 val now : unit -> t
-val to_string : t -> string
+val to_millisec : t -> int
+val from_string : string -> t
+val ymdhms : t -> string

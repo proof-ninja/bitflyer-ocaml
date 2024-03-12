@@ -8,14 +8,14 @@ let make_param product_code order side size : Json.t =
          ("product_code", `String product_code);
          ("child_order_type", `String "LIMIT");
          ("price", `String (string_of_float price));
-         ("side", `String side);
+         ("side", `String (string_of_side side));
          ("size", `String (string_of_float size));
        ]
   | Market ->
      `Assoc [
          ("product_code", `String product_code);
          ("child_order_type", `String "MARKET");
-         ("side", `String side);
+         ("side", `String (string_of_side side));
          ("size", `String (string_of_float size));
        ]
 
@@ -34,9 +34,9 @@ type order = {
     child_order_type: order_type;
     (*"average_price": 30000,*)
     size: float;
-    (*TODO"child_order_state": "COMPLETED",*)
+    child_order_state: string; (*"ACTIVE"とか"COMPLETED"とか*)
     (*"expire_date": "2015-07-14T07:25:52",*)
-    (*"child_order_date": "2015-07-07T08:45:53",*)
+    child_order_date: Datetime.t; (*"2015-07-07T08:45:53"*)
     (*"child_order_acceptance_id": "JRF20150707-084552-031927",*)
     (* "outstanding_size": 0,*)
     (*"cancel_size": 0,*)
@@ -59,9 +59,14 @@ let order_of_json json =
     | "MARKET" -> Market
     | other -> failwith (!%"order_of_json: '%s'" other)
   in
+  let child_order_state = member "child_order_state" json |> to_string in
   let size = member "size" json |> to_float in
+  let child_order_date =
+    member "child_order_date" json |> to_string |> Datetime.from_string
+  in
   {
-    id; product_code; side; child_order_type; size
+    id; product_code; side; child_order_type; size; child_order_state;
+    child_order_date;
   }
 
 let orders_of_json json =
