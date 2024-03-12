@@ -2,3 +2,8 @@
  (public_name bitflyer)
  (name main)
  (libraries bitflyer))
+
+(env
+ (dev
+  (flags (:standard -warn-error -a)))
+)
