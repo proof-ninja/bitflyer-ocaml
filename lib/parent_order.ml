@@ -112,3 +112,22 @@ let json_of_order (order: special_order) : Json.t =
       ("time_in_force", Option.map (fun t -> `String t) order.time_in_force);
       ("parameters", Some (`List parameters))
     ]
+
+type placed_order = { (* 発注済みの注文 *)
+    id: int;
+    (*    "parent_order_id": "JCO20150707-084555-022523", *)
+    product_code: string;
+    side: side;
+    (* "parent_order_type": "STOP",*)
+    (*"price": 30000, *)
+    (*"average_price": 30000, *)
+    size: float;
+    parent_order_state: string;
+    (*"expire_date": "2015-07-14T07:25:52",*)
+    (*"parent_order_date": "2015-07-07T08:45:53",*)
+    (*"parent_order_acceptance_id": "JRF20150707-084552-031927",*)
+    (*"outstanding_size": 0,*)
+    (*"cancel_size": 0,*)
+    (*"executed_size": 0.1,*)
+    (*"total_commission": 0*)
+  }

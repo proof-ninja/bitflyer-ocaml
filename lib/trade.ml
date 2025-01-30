@@ -13,7 +13,7 @@ let getchildorders auth product_code =
   let query = [("product_code", product_code)] in
   ApiCommon.get auth path query >>= fun json ->
   Child_order.orders_of_json json
-  |> Lwt.return
+  |> fun orders -> Lwt.return (json, orders)
   (*
   let headers = Auth.make_header auth "GET" path "" in
   Http.get ~headers Common.host path query
@@ -67,3 +67,15 @@ let gettradingcommision auth product_code =
   let open Json.Util in
   let commision_rate = json |> member "commision_rate" |> to_float in
   Lwt.return commision_rate
+
+let getparentorders auth product_code =
+  let path = "/v1/me/getparentorders" in
+  let query = [("product_code", product_code)] in
+  ApiCommon.get auth path query >>= fun json ->
+  Lwt.return json
+
+let getparentorder auth parent_order_id =
+  let path = "/v1/me/getparentorder" in
+  let query = [("parent_order_id", parent_order_id)] in
+  ApiCommon.get auth path query >>= fun json ->
+  Lwt.return json
