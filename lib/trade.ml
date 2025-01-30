@@ -72,7 +72,10 @@ let getparentorders auth product_code =
   let path = "/v1/me/getparentorders" in
   let query = [("product_code", product_code)] in
   ApiCommon.get auth path query >>= fun json ->
-  Lwt.return json
+  Json.Util.to_list json
+  |> List.map Parent_order.order_of_json
+  |> fun orders -> Lwt.return (json, orders)
+
 
 let getparentorder auth parent_order_id =
   let path = "/v1/me/getparentorder" in

@@ -117,10 +117,10 @@ type placed_order = { (* 発注済みの注文 *)
     id: int;
     (*    "parent_order_id": "JCO20150707-084555-022523", *)
     product_code: string;
-    side: side;
+    (*side: side; "BUYSELL" *)
     (* "parent_order_type": "STOP",*)
-    (*"price": 30000, *)
-    (*"average_price": 30000, *)
+    price: float;
+    average_price: float;
     size: float;
     parent_order_state: string;
     (*"expire_date": "2015-07-14T07:25:52",*)
@@ -130,4 +130,16 @@ type placed_order = { (* 発注済みの注文 *)
     (*"cancel_size": 0,*)
     (*"executed_size": 0.1,*)
     (*"total_commission": 0*)
+  }
+
+let order_of_json json =
+  let open Json.Util in
+  let id = member "id" json |> to_int in
+  let product_code = member "product_code" json |> to_string in
+  let price = member "price" json |> to_float in
+  let average_price = member "average_price" json |> to_float in
+  let size = member "size" json |> to_float in
+  let parent_order_state = member "parent_order_state" json |> to_string in
+  {
+    id; product_code; price; average_price; size; parent_order_state;
   }

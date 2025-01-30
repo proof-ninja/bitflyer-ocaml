@@ -17,7 +17,7 @@ val sendparentorder :
   Auth.t -> Parent_order.special_order -> Json.t Lwt.t
 
 val getparentorders :
-  Auth.t -> product_code -> Json.t Lwt.t
+  Auth.t -> product_code -> (Json.t * Parent_order.placed_order list) Lwt.t
 
 val getparentorder :
   Auth.t -> string -> Json.t Lwt.t
