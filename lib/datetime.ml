@@ -6,6 +6,8 @@ let now () = Unix.gettimeofday ()
 
 let to_millisec time = (time *. 1000.) |> int_of_float
 
+let to_sec time = time
+
 (*"2015-07-07T08:45:53"*)
 let from_string s =
   let dummy = 123 in
@@ -18,6 +20,8 @@ let from_string s =
       |> Unix.mktime
       |> fst)
 
+let from_sec f = f
+
 let ymdhms time =
   let tm = Unix.localtime time in
   let year = tm.tm_year + 1900 in
@@ -28,3 +32,9 @@ let ymdhms time =
   let sec = tm.tm_sec in
   !%"%04d_%02d_%02d-%02d_%02d_%02d"
     year month day hour min sec
+
+let sday time =
+  let tm = Unix.localtime time in
+  let month = tm.tm_mon + 1 in
+  let day = tm.tm_mday in
+  !%"%02d/%02d" month day

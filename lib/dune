@@ -1,5 +1,6 @@
 (library
  (name bitflyer)
+ (preprocess (pps lwt_ppx))
  (public_name bitflyer)
  (libraries ; lwt h2 h2-lwt-unix
- cohttp cohttp-lwt-unix hacl-star yojson hex dolog))
+ cohttp cohttp-lwt-unix hacl-star yojson hex dolog lwt_ppx))

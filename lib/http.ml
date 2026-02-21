@@ -8,17 +8,26 @@ let curlcmd meth headers uri body =
   in
   !%"curl -X %s %s --data '%s' '%s'" meth headers body (Uri.to_string uri)
 
+exception HttpException of string * Uri.t * exn
+
 let get ?(headers=[]) uri =
-  Log.debug "Http.get $ %s" (curlcmd "GET" headers uri "");
-  let headers = Cohttp.Header.of_list headers in
-  Client.get ~headers uri >>= fun (_resp, body) ->
-  Cohttp_lwt.Body.to_string body
-  >>= fun body -> Log.debug "response: %s" body; Lwt.return body
+  try%lwt
+    Log.debug "Http.get $ %s" (curlcmd "GET" headers uri "");
+    let headers = Cohttp.Header.of_list headers in
+    Client.get ~headers uri >>= fun (_resp, body) ->
+    Cohttp_lwt.Body.to_string body
+    >>= fun body -> Log.debug "response: %s" body; Lwt.return body
+  with
+  | exn -> raise (HttpException ("GET", uri, exn))
+     
 
 let post ?(headers=[]) uri data =
-  Log.debug "Http.post $ %s" (curlcmd "POST" headers uri data);
-  let headers = Cohttp.Header.of_list headers in
-  let body = Cohttp_lwt.Body.of_string data in
-  Client.post ~headers uri ~body >>= fun (_resp, body) ->
-  Cohttp_lwt.Body.to_string body
-  >>= fun body -> Log.debug "response: %s" body; Lwt.return body
+  try%lwt
+     Log.debug "Http.post $ %s" (curlcmd "POST" headers uri data);
+     let headers = Cohttp.Header.of_list headers in
+     let body = Cohttp_lwt.Body.of_string data in
+     Client.post ~headers uri ~body >>= fun (_resp, body) ->
+     Cohttp_lwt.Body.to_string body
+     >>= fun body -> Log.debug "response: %s" body; Lwt.return body
+  with
+  | exn -> raise (HttpException ("POST", uri, exn))
