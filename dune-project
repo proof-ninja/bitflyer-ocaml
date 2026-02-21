@@ -2,7 +2,7 @@
 
 (name bitflyer)
 
-(version 0.1.0)
+(version dev)
 
 (generate_opam_files true)
 
@@ -21,7 +21,7 @@
  (name bitflyer)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson hacl-star hex dolog)
+ (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson hacl-star hex dolog lwt_ppx)
  (tags
   (topics "to describe" your project)))
 
