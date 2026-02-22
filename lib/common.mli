@@ -14,6 +14,8 @@ val list_is_empty : 'a list -> bool
 
 val list_last : 'a list -> 'a
 
+val list_add_opt : 'a option -> 'a list -> 'a list
+
 type product_code = string
 
 type order_type =

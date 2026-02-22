@@ -42,6 +42,10 @@ let list_last xs =
   if list_is_empty xs then failwith (!%"Common.list_last: list is empty");
   List.hd @@ List.rev xs
 
+let list_add_opt o xs =
+  match o with
+  | Some x -> x :: xs
+  | None -> xs
 
 
 type product_code = string

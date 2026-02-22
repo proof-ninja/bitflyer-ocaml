@@ -8,9 +8,36 @@ let sendchildorder auth product_code order side size =
   in
   ApiCommon.post auth path data
 
-let getchildorders auth product_code =
+(**
+   ## Query Parameters
+   > * [product_code]: Please specify a product_code, as obtained from the Market List. Please refer to the Regions to check available products in each region.
+   > * count, before, after: See Pagination. If either before or after is specified, ["ACTIVE"] orders will not be included in the result.
+   > * child_order_state: When specified, return only orders that match the specified value. If not specified, returns a concatenated list of ["ACTIVE"] and non-ACTIVE orders.
+   > You can specify one of the following:
+      > ** ["ACTIVE"]: Return open orders
+      > ** ["COMPLETED"]: Return fully completed orders
+      > ** ["CANCELED"]: Return orders that have been cancelled by the customer
+      > ** ["EXPIRED"]: Return order that have been cancelled due to expiry
+      > ** ["REJECTED"]: Return failed orders
+   > * [child_order_id], [child_order_acceptance_id]: ID for the child order.
+   > * [parent_order_id]: If specified, a list of all orders associated with the parent order is obtained.
+
+   ## Pagenation
+   see: https://lightning.bitflyer.com/docs?lang=en#pagination
+   > * count: Specifies the number of results. If this is omitted, the value will be 100.
+   > * before: Obtains data having an id lower than the value specified for this parameter.
+                                                                            > * after: Obtains data having an id higher than the value specified for this parameter.
+ *)
+let getchildorders auth ?child_order_state ?count ?before ?after product_code =
   let path = "/v1/me/getchildorders" in
-  let query = [("product_code", product_code)] in
+  let query =
+    [("product_code", product_code)]
+    |> list_add_opt
+         (Option.map (fun s -> ("child_order_state", s)) child_order_state)
+    |> list_add_opt (Option.map (fun c -> ("count", !%"%d" c)) count)
+    |> list_add_opt (Option.map (fun x -> ("before", !%"%d" x)) before)
+    |> list_add_opt (Option.map (fun x -> ("after", !%"%d" x)) after)
+  in
   ApiCommon.get auth path query >>= fun json ->
   Child_order.orders_of_json json
   |> fun orders -> Lwt.return (json, orders)
@@ -48,9 +75,23 @@ let executions_of_json json =
   to_list json
   |> List.map execution_of_json
 
-let getexecutions auth product_code =
+(**
+   ## Query Parameters
+   see: https://lightning.bitflyer.com/docs?lang=en#list-executions
+
+   > * [product_code]: Please specify a product_code, as obtained from the Market List. Please refer to the Regions to check available products in each region.
+   > * [count], [before], [after]: See Pagination. (Same as [Trade.getchildorders])
+   > * [child_order_id]: Optional. When specified, a list of stipulations related to the order will be displayed.
+   > * [child_order_acceptance_id]: Optional. Expects an ID from Send a New Order. When specified, a list of stipulations related to the corresponding order will be displayed.
+ *)
+let getexecutions auth ?count ?before ? after product_code =
   let path = "/v1/me/getexecutions" in
-  let query = [("product_code", product_code)] in
+  let query =
+    [("product_code", product_code)]
+    |> list_add_opt (Option.map (fun c -> ("count", !%"%d" c)) count)
+    |> list_add_opt (Option.map (fun x -> ("before", !%"%d" x)) before)
+    |> list_add_opt (Option.map (fun x -> ("after", !%"%d" x)) after)
+  in
   ApiCommon.get auth path query >>= fun json ->
   Lwt.return (executions_of_json json)
 
