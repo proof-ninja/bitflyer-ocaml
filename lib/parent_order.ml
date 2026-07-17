@@ -130,16 +130,9 @@ type placed_order = { (* 発注済みの注文 *)
     (*"cancel_size": 0,*)
     (*"executed_size": 0.1,*)
     (*"total_commission": 0*)
-  }
+  } [@@deriving yojson]
 
 let order_of_json json =
-  let open Json.Util in
-  let id = member "id" json |> to_int in
-  let product_code = member "product_code" json |> to_string in
-  let price = member "price" json |> to_float in
-  let average_price = member "average_price" json |> to_float in
-  let size = member "size" json |> to_float in
-  let parent_order_state = member "parent_order_state" json |> to_string in
-  {
-    id; product_code; price; average_price; size; parent_order_state;
-  }
+  match placed_order_of_yojson json with
+  | Ok order -> order
+  | Error msg -> failwith (!%"Parent_order.order_of_json: %s" msg)

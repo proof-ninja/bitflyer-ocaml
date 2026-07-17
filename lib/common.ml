@@ -69,6 +69,17 @@ let string_of_side = function
   | Buy -> "BUY"
   | Sell -> "SELL"
 
+(* bitFlyer's wire format is a plain string ("BUY"/"SELL"), which is not what
+   [@@deriving yojson] would produce for a variant type, so these are
+   hand-written to plug [side] into records that derive yojson. *)
+let side_to_yojson side : Yojson.Safe.t = `String (string_of_side side)
+
+let side_of_yojson json =
+  match json with
+  | `String s ->
+     (try Ok (side_of_string s) with Failure msg -> Error msg)
+  | _ -> Error "side_of_yojson: expected a string"
+
 module Log = Dolog.Log
 
-module Json = Yojson.Basic
+module Json = Yojson.Safe

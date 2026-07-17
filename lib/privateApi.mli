@@ -23,3 +23,6 @@ val getparentorders :
 
 val getparentorder :
   Auth.t -> string -> Json.t Lwt.t
+
+val cancelchildorder :
+  Auth.t -> product_code -> string -> Json.t Lwt.t

@@ -11,3 +11,5 @@ let sendparentorder = Trade.sendparentorder
 let getparentorders = Trade.getparentorders
 
 let getparentorder = Trade.getparentorder
+
+let cancelchildorder = Trade.cancelchildorder

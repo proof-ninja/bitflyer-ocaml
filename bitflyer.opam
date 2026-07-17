@@ -17,6 +17,7 @@ depends: [
   "lwt"
   "cohttp-lwt-unix"
   "yojson"
+  "ppx_deriving_yojson"
   "hacl-star"
   "hex"
   "dolog"

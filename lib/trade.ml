@@ -56,23 +56,15 @@ type execution = {
     (* "commission": 0, *)
     exec_date: string; (* "2015-07-07T09:57:40.397", *)
     (* "child_order_acceptance_id": "JRF20150707-060559-396699" *)
-}
+} [@@deriving yojson]
 
 let execution_of_json json =
-  let open Json.Util in
-  let id = member "id" json |> to_int in
-  let child_order_id = member "child_order_id" json |> to_string in
-  let side = member "side" json |> to_string |> Common.side_of_string in
-  let price = member "price" json |> to_float in
-  let size = member "size" json |> to_float in
-  let exec_date = member "exec_date" json |> to_string in
-  {
-    id; child_order_id; side; price; size; exec_date
-  }
+  match execution_of_yojson json with
+  | Ok execution -> execution
+  | Error msg -> failwith (!%"Trade.execution_of_json: %s" msg)
 
 let executions_of_json json =
-  let open Json.Util in
-  to_list json
+  Json.Util.to_list json
   |> List.map execution_of_json
 
 (**
@@ -122,5 +114,14 @@ let getparentorders auth product_code =
 let getparentorder auth parent_order_id =
   let path = "/v1/me/getparentorder" in
   let query = [("parent_order_id", parent_order_id)] in
+  ApiCommon.get auth path query >>= fun json ->
+  Lwt.return json
+
+let cancelchildorder auth product_code child_order_id =
+  let path = "/v1/me/cancelchildorder" in
+  let query = [
+      ("product_code", product_code);
+      ("parent_order_id", child_order_id);
+    ] in
   ApiCommon.get auth path query >>= fun json ->
   Lwt.return json

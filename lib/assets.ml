@@ -4,14 +4,12 @@ type balance = {
     currency_code : string;
     amount : float;
     available : float; (*買付余力*)
-}
+} [@@deriving yojson]
 
 let balance_of_json json =
-  let open Json.Util in
-  let currency_code = member "currency_code" json |> to_string in
-  let amount = member "amount" json |> to_float in
-  let available = member "available" json |> to_float in
-  { currency_code; amount; available }
+  match balance_of_yojson json with
+  | Ok balance -> balance
+  | Error msg -> failwith (!%"Assets.balance_of_json: %s" msg)
 
 let balances_of_json json =
   Json.Util.to_list json

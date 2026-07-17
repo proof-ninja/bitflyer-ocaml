@@ -23,9 +23,11 @@ type order_type =
   | Limit of float
 val string_of_order_type : order_type -> string
 
+module Log = Dolog.Log
+module Json = Yojson.Safe
+
 type side = Buy | Sell
 val side_of_string : string -> side
 val string_of_side : side -> string
-
-module Log = Dolog.Log
-module Json = Yojson.Basic
+val side_to_yojson : side -> Json.t
+val side_of_yojson : Json.t -> (side, string) result
