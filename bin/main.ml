@@ -30,8 +30,8 @@ let () =
   ignore latest*)
   try
     Lwt_main.run begin
-        PublicApi.getboard "BTC_JPY" >>= fun json ->
-        print_endline (Json.show json);
+        PublicApi.getboard "BTC_JPY" >>= fun board ->
+        print_endline (Json.show (PublicApi.board_to_yojson board));
         return ()
 end
   with

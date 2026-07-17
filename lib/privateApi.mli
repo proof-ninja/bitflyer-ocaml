@@ -25,7 +25,15 @@ val getparentorder :
   Auth.t -> string -> Json.t Lwt.t
 
 val cancelchildorder :
-  Auth.t -> product_code -> string -> Json.t Lwt.t
+  Auth.t -> product_code -> Trade.order_ref -> Json.t Lwt.t
+
+(* 親注文をキャンセルする *)
+val cancelparentorder :
+  Auth.t -> product_code -> Trade.order_ref -> Json.t Lwt.t
+
+(* すべての注文をキャンセルする *)
+val cancelallchildorders :
+  Auth.t -> product_code -> Json.t Lwt.t
 
 (* 建玉の一覧を取得 *)
 val getpositions :

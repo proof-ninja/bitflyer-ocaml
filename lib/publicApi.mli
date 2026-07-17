@@ -3,8 +3,22 @@ open Common
 val getmarkets : Json.t Lwt.t
 val markets : Json.t Lwt.t
 
-val getboard : product_code -> Json.t Lwt.t
-val board : product_code -> Json.t Lwt.t
+type level = {
+    price: float;
+    size: float;
+}
+
+type board = {
+    mid_price: float;
+    bids: level list;
+    asks: level list;
+}
+
+val board_of_json : Json.t -> board
+val board_to_yojson : board -> Json.t
+
+val getboard : product_code -> board Lwt.t
+val board : product_code -> board Lwt.t
 
 type ticker = {
     product_code: string;

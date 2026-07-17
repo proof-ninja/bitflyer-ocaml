@@ -117,14 +117,35 @@ let getparentorder auth parent_order_id =
   ApiCommon.get auth path query >>= fun json ->
   Lwt.return json
 
-let cancelchildorder auth product_code child_order_id =
+(* 注文の指定方法: ID そのもの、または新規注文API受付時に得られる acceptance_id のどちらか片方。 *)
+type order_ref = Id of string | AcceptanceId of string
+
+let cancelchildorder auth product_code order_ref =
   let path = "/v1/me/cancelchildorder" in
-  let query = [
-      ("product_code", product_code);
-      ("parent_order_id", child_order_id);
-    ] in
-  ApiCommon.get auth path query >>= fun json ->
-  Lwt.return json
+  let id_field = match order_ref with
+    | Id id -> ("child_order_id", `String id)
+    | AcceptanceId id -> ("child_order_acceptance_id", `String id)
+  in
+  let data =
+    `Assoc [("product_code", `String product_code); id_field] |> Json.to_string
+  in
+  ApiCommon.post auth path data
+
+let cancelparentorder auth product_code order_ref =
+  let path = "/v1/me/cancelparentorder" in
+  let id_field = match order_ref with
+    | Id id -> ("parent_order_id", `String id)
+    | AcceptanceId id -> ("parent_order_acceptance_id", `String id)
+  in
+  let data =
+    `Assoc [("product_code", `String product_code); id_field] |> Json.to_string
+  in
+  ApiCommon.post auth path data
+
+let cancelallchildorders auth product_code =
+  let path = "/v1/me/cancelallchildorders" in
+  let data = `Assoc [("product_code", `String product_code)] |> Json.to_string in
+  ApiCommon.post auth path data
 
 type position = { (* 建玉 *)
     product_code: string;

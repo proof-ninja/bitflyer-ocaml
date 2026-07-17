@@ -11,25 +11,31 @@ let markets =
   let path = "/v1/markets" in
   ApiCommon.get_public path []
 
-(*
-{
-  "mid_price": 33320,
-  "bids": [
-    {"price": 30000, "size": 0.1},
-    {"price": 25570, "size": 3}
-  ],
-  "asks": [
-    {"price": 36640, "size": 5},
-    {"price": 36700, "size": 1.2}
-  ]
-}*)
+type level = {
+    price: float;
+    size: float;
+} [@@deriving yojson]
+
+type board = {
+    mid_price: float;
+    bids: level list;
+    asks: level list;
+} [@@deriving yojson]
+
+let board_of_json json =
+  match board_of_yojson json with
+  | Ok board -> board
+  | Error msg -> failwith (!%"PublicApi.board_of_json: %s" msg)
+
 let getboard product_code =
   let path = "/v1/getboard" in
-  ApiCommon.get_public path [("product_code", product_code)]
+  ApiCommon.get_public path [("product_code", product_code)] >>= fun json ->
+  Lwt.return (board_of_json json)
 
 let board product_code =
   let path = "/v1/board" in
-  ApiCommon.get_public path [("product_code", product_code)]
+  ApiCommon.get_public path [("product_code", product_code)] >>= fun json ->
+  Lwt.return (board_of_json json)
 
 type ticker = {
     product_code: string;

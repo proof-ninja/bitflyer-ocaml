@@ -14,6 +14,10 @@ let getparentorder = Trade.getparentorder
 
 let cancelchildorder = Trade.cancelchildorder
 
+let cancelparentorder = Trade.cancelparentorder
+
+let cancelallchildorders = Trade.cancelallchildorders
+
 let getpositions = Trade.getpositions
 
 let gettradingcommission = Trade.gettradingcommission

@@ -58,8 +58,8 @@
 | 新規注文を出す | `POST /v1/me/sendchildorder` | ✅ | `PrivateApi.sendchildorder` |
 | 注文をキャンセルする | `POST /v1/me/cancelchildorder` | ✅ | `PrivateApi.cancelchildorder` |
 | 新規の親注文を出す（特殊注文） | `POST /v1/me/sendparentorder` | ✅ | `PrivateApi.sendparentorder` |
-| 親注文をキャンセルする | `POST /v1/me/cancelparentorder` | ❌ | - |
-| すべての注文をキャンセルする | `POST /v1/me/cancelallchildorders` | ❌ | - |
+| 親注文をキャンセルする | `POST /v1/me/cancelparentorder` | ✅ | `PrivateApi.cancelparentorder` |
+| すべての注文をキャンセルする | `POST /v1/me/cancelallchildorders` | ✅ | `PrivateApi.cancelallchildorders` |
 | 注文の一覧を取得 | `GET /v1/me/getchildorders` | ✅ | `PrivateApi.getchildorders` |
 | 親注文の一覧を取得 | `GET /v1/me/getparentorders` | ✅ | `PrivateApi.getparentorders` |
 | 親注文の詳細を取得 | `GET /v1/me/getparentorder` | ✅ | `PrivateApi.getparentorder` |
@@ -74,6 +74,21 @@
 | チャンネル | 状態 | 実装 |
 |---|---|---|
 | Ticker (`lightning_ticker_<product_code>`) | ✅ | `Realtime.updates`（`Ticker of PublicApi.ticker`） |
-| 板情報 (`lightning_board_snapshot_<product_code>`, `lightning_board_<product_code>`) | ✅ | `Realtime.updates`（`Board of Realtime.board`。差分を内部で積算し常に最新の板状態を返す） |
+| 板情報 (`lightning_board_snapshot_<product_code>`, `lightning_board_<product_code>`) | ✅ | `Realtime.updates`（`Board of Realtime.orderbook`。差分を内部で積算し常に最新の板状態を返す） |
 | 約定 (`lightning_executions_<product_code>`) | ❌ | - |
 | チャイルドオーダー・親注文イベント (`child_order_events`, `parent_order_events`) | ❌ | - |
+
+既知の制約:
+- 接続を明示的に閉じる手段は未実装（ストリームの消費をやめても裏の接続は残る）
+- 発注条件を満たす間は毎回発注する仕様（連続発注の抑制なし）
+
+## レートリミッター
+
+[API制限](https://lightning.bitflyer.com/docs)に基づき、`ApiCommon`が全てのHTTPリクエストに自動で流量制限をかけます（`RateLimiter`モジュール、スライディングウィンドウ方式）。上限に達した場合は例外を投げずに、枠が空くまで自動的に待機してから送信します。
+
+| 対象 | 上限 | 適用範囲 |
+|---|---|---|
+| 全リクエスト共通 | 500回 / 5分 | `ApiCommon.get_public`, `get`, `post` すべて |
+| 注文系エンドポイント | 300回 / 5分 | `sendchildorder`, `sendparentorder`, `cancelallchildorders` |
+
+「数量0.1以下の注文は1分間で100回まで」という注文内容に依存する制限は、注文サイズを解釈する必要があるため未対応です。

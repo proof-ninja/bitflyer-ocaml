@@ -37,56 +37,42 @@ let send_subscribe conn channel =
   Websocket_lwt_unix.write conn
     (Websocket.Frame.create ~content:(Json.to_string request) ())
 
-type level = {
-    price: float;
-    size: float;
-} [@@deriving yojson]
-
-type board_message = {
-    mid_price: float;
-    bids: level list;
-    asks: level list;
-} [@@deriving yojson]
-
-let board_message_of_json json =
-  match board_message_of_yojson json with
-  | Ok message -> message
-  | Error msg -> failwith (!%"Realtime.board_message_of_json: %s" msg)
-
-(* 板の現在状態。bids は価格の高い順、asks は安い順に並ぶ。 *)
-type board = {
+(* 板の現在状態。bids は価格の高い順、asks は安い順に並ぶ。
+   購読で届く lightning_board_snapshot/lightning_board のメッセージは
+   HTTP の板情報 (GET /v1/getboard) と同じ形なので [PublicApi.board] を再利用する。 *)
+type orderbook = {
     mid_price: float;
     bids: (float * float) list; (* (price, size) *)
     asks: (float * float) list; (* (price, size) *)
 }
 
-let empty_board = { mid_price = 0.0; bids = []; asks = [] }
+let empty_orderbook = { mid_price = 0.0; bids = []; asks = [] }
 
-let best_bid board =
-  match board.bids with (price, _) :: _ -> Some price | [] -> None
+let best_bid orderbook =
+  match orderbook.bids with (price, _) :: _ -> Some price | [] -> None
 
-let best_ask board =
-  match board.asks with (price, _) :: _ -> Some price | [] -> None
+let best_ask orderbook =
+  match orderbook.asks with (price, _) :: _ -> Some price | [] -> None
 
 (* level.size = 0 はその価格帯の削除を意味する（差分更新の反映）。 *)
-let apply_levels ~compare levels current =
+let apply_levels ~compare (levels : PublicApi.level list) current =
   List.fold_left
-    (fun current (level : level) ->
+    (fun current (level : PublicApi.level) ->
        let current = List.filter (fun (price, _) -> price <> level.price) current in
        if level.size = 0.0 then current else (level.price, level.size) :: current)
     current levels
   |> List.sort (fun (p1, _) (p2, _) -> compare p1 p2)
 
-let apply_board_message (message : board_message) (board : board) =
+let apply_board_message (message : PublicApi.board) (orderbook : orderbook) =
   {
     mid_price = message.mid_price;
-    bids = apply_levels ~compare:(fun p1 p2 -> Stdlib.compare p2 p1) message.bids board.bids;
-    asks = apply_levels ~compare:Stdlib.compare message.asks board.asks;
+    bids = apply_levels ~compare:(fun p1 p2 -> Stdlib.compare p2 p1) message.bids orderbook.bids;
+    asks = apply_levels ~compare:Stdlib.compare message.asks orderbook.asks;
   }
 
 type update =
   | Ticker of PublicApi.ticker
-  | Board of board
+  | Board of orderbook
 
 let channel_message_of_frame (frame : Websocket.Frame.t) =
   match frame.opcode with
@@ -112,7 +98,7 @@ let updates product_code =
   send_subscribe conn ticker_channel >>= fun () ->
   send_subscribe conn board_snapshot_channel >>= fun () ->
   send_subscribe conn board_channel >>= fun () ->
-  let board = ref empty_board in
+  let orderbook = ref empty_orderbook in
   let rec next () =
     Websocket_lwt_unix.read conn >>= fun frame ->
     match frame.Websocket.Frame.opcode with
@@ -126,11 +112,11 @@ let updates product_code =
         | Some (channel, message) when channel = ticker_channel ->
            Lwt.return_some (Ticker (PublicApi.ticker_of_json message))
         | Some (channel, message) when channel = board_snapshot_channel ->
-           board := apply_board_message (board_message_of_json message) empty_board;
-           Lwt.return_some (Board !board)
+           orderbook := apply_board_message (PublicApi.board_of_json message) empty_orderbook;
+           Lwt.return_some (Board !orderbook)
         | Some (channel, message) when channel = board_channel ->
-           board := apply_board_message (board_message_of_json message) !board;
-           Lwt.return_some (Board !board)
+           orderbook := apply_board_message (PublicApi.board_of_json message) !orderbook;
+           Lwt.return_some (Board !orderbook)
         | Some _ | None -> next ())
   in
   Lwt.return (Lwt_stream.from next)
