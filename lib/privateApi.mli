@@ -26,3 +26,15 @@ val getparentorder :
 
 val cancelchildorder :
   Auth.t -> product_code -> string -> Json.t Lwt.t
+
+(* 建玉の一覧を取得 *)
+val getpositions :
+  Auth.t -> product_code -> Trade.position list Lwt.t
+
+(* 取引手数料を取得 *)
+val gettradingcommission :
+  Auth.t -> product_code -> float Lwt.t
+
+(* 預入用アドレス取得 *)
+val getaddresses :
+  Auth.t -> Account_statement.address list Lwt.t

@@ -94,13 +94,13 @@ let sendparentorder auth special_order =
   in
   ApiCommon.post auth path data
 
-let gettradingcommision auth product_code =
-  let path = "/v1/me/gettradingcommision" in
+let gettradingcommission auth product_code =
+  let path = "/v1/me/gettradingcommission" in
   let query = [("product_code", product_code)] in
   ApiCommon.get auth path query >>= fun json ->
   let open Json.Util in
-  let commision_rate = json |> member "commision_rate" |> to_float in
-  Lwt.return commision_rate
+  let commission_rate = json |> member "commission_rate" |> to_float in
+  Lwt.return commission_rate
 
 let getparentorders auth product_code =
   let path = "/v1/me/getparentorders" in
@@ -125,3 +125,33 @@ let cancelchildorder auth product_code child_order_id =
     ] in
   ApiCommon.get auth path query >>= fun json ->
   Lwt.return json
+
+type position = { (* 建玉 *)
+    product_code: string;
+    side: side;
+    price: float;
+    size: float;
+    commission: float;
+    swap_point_accumulate: float;
+    require_collateral: float;
+    open_date: string; (* "2015-11-03T10:04:45.011" *)
+    leverage: float;
+    pnl: float;
+    sfd: float;
+    funding_fees: float;
+} [@@deriving yojson]
+
+let position_of_json json =
+  match position_of_yojson json with
+  | Ok position -> position
+  | Error msg -> failwith (!%"Trade.position_of_json: %s" msg)
+
+let positions_of_json json =
+  Json.Util.to_list json
+  |> List.map position_of_json
+
+let getpositions auth product_code =
+  let path = "/v1/me/getpositions" in
+  let query = [("product_code", product_code)] in
+  ApiCommon.get auth path query >>= fun json ->
+  Lwt.return (positions_of_json json)
