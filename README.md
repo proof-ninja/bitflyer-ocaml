@@ -1,14 +1,14 @@
 # Bitflyer API from OCaml
 
+[![Builds, tests & co](https://github.com/proof-ninja/bitflyer-ocaml/actions/workflows/ocaml-ci.yml/badge.svg)](https://github.com/proof-ninja/bitflyer-ocaml/actions/workflows/ocaml-ci.yml)
+
 ## Example of use
 
 ![demo.gif](demo.gif)
 
 ## API実装状況
 
-`apidocs/` に保存した公式APIドキュメントに基づく実装状況一覧です。
-
-凡例: ✅ 実装済み / ⚠️ 実装はあるが未公開・型なし・要確認 / ❌ 未実装
+[公式APIドキュメント](https://lightning.bitflyer.com/docs)に基づく実装状況一覧です。
 
 ### HTTP Public API
 
@@ -68,3 +68,12 @@
 | 建玉の一覧を取得 | `GET /v1/me/getpositions` | ✅ | `PrivateApi.getpositions`（信用（FX_BTC_JPY）取引のポジション確認に使用） |
 | 証拠金の変動履歴を取得 | `GET /v1/me/getcollateralhistory` | ❌ | - |
 | 取引手数料を取得 | `GET /v1/me/gettradingcommission` | ✅ | `PrivateApi.gettradingcommission`（`commision`誤記を修正済み） |
+
+### Realtime API (WebSocket)
+
+| チャンネル | 状態 | 実装 |
+|---|---|---|
+| Ticker (`lightning_ticker_<product_code>`) | ✅ | `Realtime.updates`（`Ticker of PublicApi.ticker`） |
+| 板情報 (`lightning_board_snapshot_<product_code>`, `lightning_board_<product_code>`) | ✅ | `Realtime.updates`（`Board of Realtime.board`。差分を内部で積算し常に最新の板状態を返す） |
+| 約定 (`lightning_executions_<product_code>`) | ❌ | - |
+| チャイルドオーダー・親注文イベント (`child_order_events`, `parent_order_events`) | ❌ | - |

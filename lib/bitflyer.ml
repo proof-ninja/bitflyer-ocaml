@@ -31,3 +31,5 @@ module Auth = Auth
 module PublicApi = PublicApi
 
 module PrivateApi = PrivateApi
+
+module Realtime = Realtime

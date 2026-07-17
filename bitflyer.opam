@@ -22,6 +22,8 @@ depends: [
   "hex"
   "dolog"
   "lwt_ppx"
+  "websocket-lwt-unix"
+  "ipaddr"
   "odoc" {with-doc}
 ]
 build: [

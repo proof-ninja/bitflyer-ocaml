@@ -24,6 +24,8 @@ type ticker = {
     (*TODO: "volume_by_product": 6819.26*)
 }
 
+val ticker_of_json : Json.t -> ticker
+
 val ticker : product_code -> ticker Lwt.t
 val getticker : product_code -> ticker Lwt.t
 

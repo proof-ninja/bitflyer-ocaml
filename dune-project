@@ -21,7 +21,7 @@
  (name bitflyer)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson ppx_deriving_yojson hacl-star hex dolog lwt_ppx)
+ (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson ppx_deriving_yojson hacl-star hex dolog lwt_ppx websocket-lwt-unix ipaddr)
  (tags
   (topics "to describe" your project)))
 
