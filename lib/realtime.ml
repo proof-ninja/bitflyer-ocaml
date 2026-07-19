@@ -87,6 +87,21 @@ let channel_message_of_frame (frame : Websocket.Frame.t) =
       | _ -> None)
   | _ -> None
 
+(* ネットワーク経路が明示的なCloseもRST/FINも送らずに黙って死んだ場合
+   (Wi-Fiのスリープ復帰やNATのセッションタイムアウトなど)、[Websocket_lwt_unix.read]
+   は例外にならずただ無期限にpendingし続け、呼び出し側の再接続ロジックが一切働かなく
+   なる。市況が動いていれば通常はもっと頻繁にtickerが届くはずなので、それより
+   十分長い時間何も届かなければ接続が死んでいるとみなして例外を投げる。 *)
+let read_timeout = 90.0
+
+type read_result = Received of Websocket.Frame.t | Timed_out
+
+let read_with_timeout conn =
+  Lwt.pick [
+      (Websocket_lwt_unix.read conn >|= fun frame -> Received frame);
+      (Lwt_unix.sleep read_timeout >|= fun () -> Timed_out);
+    ]
+
 (* [updates product_code] は WebSocket に接続し、Ticker と 板情報(Board) の
    両チャンネルを購読して、受信するたびに最新状態を [update Lwt_stream.t] として流す。
    Board は差分を内部で積算した「その時点での板の状態」を返す。 *)
@@ -100,23 +115,26 @@ let updates product_code =
   send_subscribe conn board_channel >>= fun () ->
   let orderbook = ref empty_orderbook in
   let rec next () =
-    Websocket_lwt_unix.read conn >>= fun frame ->
-    match frame.Websocket.Frame.opcode with
-    | Websocket.Frame.Opcode.Ping ->
-       Websocket_lwt_unix.write conn
-         (Websocket.Frame.create ~opcode:Websocket.Frame.Opcode.Pong ())
-       >>= next
-    | Websocket.Frame.Opcode.Close -> Lwt.return_none
-    | _ ->
-       (match channel_message_of_frame frame with
-        | Some (channel, message) when channel = ticker_channel ->
-           Lwt.return_some (Ticker (PublicApi.ticker_of_json message))
-        | Some (channel, message) when channel = board_snapshot_channel ->
-           orderbook := apply_board_message (PublicApi.board_of_json message) empty_orderbook;
-           Lwt.return_some (Board !orderbook)
-        | Some (channel, message) when channel = board_channel ->
-           orderbook := apply_board_message (PublicApi.board_of_json message) !orderbook;
-           Lwt.return_some (Board !orderbook)
-        | Some _ | None -> next ())
+    read_with_timeout conn >>= function
+    | Timed_out ->
+       Lwt.fail_with (!%"Realtime: no data received within %.0fs, treating connection as dead" read_timeout)
+    | Received frame ->
+       (match frame.Websocket.Frame.opcode with
+        | Websocket.Frame.Opcode.Ping ->
+           Websocket_lwt_unix.write conn
+             (Websocket.Frame.create ~opcode:Websocket.Frame.Opcode.Pong ())
+           >>= next
+        | Websocket.Frame.Opcode.Close -> Lwt.return_none
+        | _ ->
+           (match channel_message_of_frame frame with
+            | Some (channel, message) when channel = ticker_channel ->
+               Lwt.return_some (Ticker (PublicApi.ticker_of_json message))
+            | Some (channel, message) when channel = board_snapshot_channel ->
+               orderbook := apply_board_message (PublicApi.board_of_json message) empty_orderbook;
+               Lwt.return_some (Board !orderbook)
+            | Some (channel, message) when channel = board_channel ->
+               orderbook := apply_board_message (PublicApi.board_of_json message) !orderbook;
+               Lwt.return_some (Board !orderbook)
+            | Some _ | None -> next ()))
   in
   Lwt.return (Lwt_stream.from next)
