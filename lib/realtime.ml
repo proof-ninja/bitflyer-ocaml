@@ -124,7 +124,7 @@ let updates product_code =
            Websocket_lwt_unix.write conn
              (Websocket.Frame.create ~opcode:Websocket.Frame.Opcode.Pong ())
            >>= next
-        | Websocket.Frame.Opcode.Close -> Lwt.return_none
+        | Websocket.Frame.Opcode.Close -> Lwt.fail_with "Realtime: server closed the connection"
         | _ ->
            (match channel_message_of_frame frame with
             | Some (channel, message) when channel = ticker_channel ->
