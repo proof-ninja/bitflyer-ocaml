@@ -1,5 +1,6 @@
 open Bitflyer
 module Json = Bitflyer__Common.Json
+module Log = Dolog.Log
 open Lwt
 
 let auth = Auth.auth ()

@@ -4,7 +4,7 @@ open Common
 let buy auth currency_pair ?(order=Market) amount =
   Lwt_main.run begin
       PrivateApi.sendchildorder auth currency_pair order Buy amount
-      >>= fun json -> Log.debug "buy: %s" (Json.to_string json); Lwt.return ()
+      >>= fun _json -> Lwt.return ()
     end
 
 let get_executions auth currency_pair =
@@ -19,12 +19,10 @@ let ifd_buysell auth currency_pair (price1, amount1) (price2, amount2) =
   in
   Lwt_main.run begin
       PrivateApi.sendparentorder auth order
-      >>= fun json -> Log.debug "order: %s" (Json.to_string json); Lwt.return ()
+      >>= fun _json -> Lwt.return ()
     end
 
 module Datetime = Datetime
-
-module Log = Log
 
 module Auth = Auth
 

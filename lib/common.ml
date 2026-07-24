@@ -80,6 +80,4 @@ let side_of_yojson json =
      (try Ok (side_of_string s) with Failure msg -> Error msg)
   | _ -> Error "side_of_yojson: expected a string"
 
-module Log = Dolog.Log
-
 module Json = Yojson.Safe

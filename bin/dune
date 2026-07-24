@@ -1,6 +1,6 @@
 (executable
  (name main)
- (libraries bitflyer))
+ (libraries bitflyer dolog))
 
 (env
  (dev
