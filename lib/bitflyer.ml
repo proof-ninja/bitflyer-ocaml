@@ -22,6 +22,11 @@ let ifd_buysell auth currency_pair (price1, amount1) (price2, amount2) =
       >>= fun _json -> Lwt.return ()
     end
 
+(* Commonモジュール全体(list_take等の内部ユーティリティを含む)は公開せず、
+   外部から発注する際に必要なside/order_typeの2つの型だけを再公開する。 *)
+type side = Common.side = Buy | Sell
+type order_type = Common.order_type = Market | Limit of float
+
 module Datetime = Datetime
 
 module Auth = Auth
