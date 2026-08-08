@@ -26,6 +26,8 @@ module Datetime = Datetime
 
 module Auth = Auth
 
+module Assets = Assets
+
 module PublicApi = PublicApi
 
 module PrivateApi = PrivateApi
