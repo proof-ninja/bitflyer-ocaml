@@ -28,6 +28,8 @@ module Auth = Auth
 
 module Assets = Assets
 
+module Child_order = Child_order
+
 module PublicApi = PublicApi
 
 module PrivateApi = PrivateApi
