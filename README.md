@@ -20,36 +20,36 @@
 | 約定履歴 | `GET /v1/getexecutions`, `/v1/executions` | ✅ | `PublicApi.getexecutions`, `PublicApi.executions` |
 | 板の状態 | `GET /v1/getboardstate` | ✅ | `PublicApi.getboardstate` |
 | 取引所の状態 | `GET /v1/gethealth` | ✅ | `PublicApi.gethealth` |
-| ファンディングレート | `GET /v1/getfundingrate` | ❌ | - |
-| ファンディングレート履歴 | `GET /v1/getfundingratehistory` | ❌ | - |
-| 法人アカウント最大レバレッジ | `GET /v1/getcorporateleverage` | ❌ | - |
+| ファンディングレート | `GET /v1/getfundingrate` | ✅ | `PublicApi.getfundingrate` |
+| ファンディングレート履歴 | `GET /v1/getfundingratehistory` | ✅ | `PublicApi.getfundingratehistory` |
+| 法人アカウント最大レバレッジ | `GET /v1/getcorporateleverage` | ✅ | `PublicApi.getcorporateleverage` |
 | チャット | `GET /v1/getchats` | ✅ | `PublicApi.getchats` |
 
 ### HTTP Private API — API
 
 | API | エンドポイント | 状態 | 実装 |
 |---|---|---|---|
-| APIキーの権限を取得 | `GET /v1/me/getpermissions` | ❌ | - |
+| APIキーの権限を取得 | `GET /v1/me/getpermissions` | ✅ | `PrivateApi.getpermissions` |
 
 ### HTTP Private API — 資産
 
 | API | エンドポイント | 状態 | 実装 |
 |---|---|---|---|
 | 資産残高を取得 | `GET /v1/me/getbalance` | ✅ | `PrivateApi.getbalance` |
-| 証拠金の状態を取得 | `GET /v1/me/getcollateral` | ⚠️ | `Assets.getcollateral`（`PrivateApi`未公開・戻り値が生JSON） |
-| 証拠金の数量（通貨別）を取得 | `GET /v1/me/getcollateralaccounts` | ⚠️ | `Assets.getcollateralaccount`（`PrivateApi`未公開・戻り値が生JSON） |
+| 証拠金の状態を取得 | `GET /v1/me/getcollateral` | ✅ | `PrivateApi.getcollateral` |
+| 証拠金の数量（通貨別）を取得 | `GET /v1/me/getcollateralaccounts` | ✅ | `PrivateApi.getcollateralaccount` |
 
 ### HTTP Private API — 入出金
 
 | API | エンドポイント | 状態 | 実装 |
 |---|---|---|---|
 | 預入用アドレス取得 | `GET /v1/me/getaddresses` | ✅ | `PrivateApi.getaddresses` |
-| 仮想通貨預入履歴 | `GET /v1/me/getcoinins` | ❌ | - |
-| 仮想通貨送付履歴 | `GET /v1/me/getcoinouts` | ❌ | - |
-| 銀行口座一覧取得 | `GET /v1/me/getbankaccounts` | ❌ | - |
-| 入金履歴 | `GET /v1/me/getdeposits` | ❌ | - |
-| 出金 | `POST /v1/me/withdraw` | ❌ | - |
-| 出金履歴 | `GET /v1/me/getwithdrawals` | ❌ | - |
+| 仮想通貨預入履歴 | `GET /v1/me/getcoinins` | ✅ | `PrivateApi.getcoinins` |
+| 仮想通貨送付履歴 | `GET /v1/me/getcoinouts` | ✅ | `PrivateApi.getcoinouts` |
+| 銀行口座一覧取得 | `GET /v1/me/getbankaccounts` | ✅ | `PrivateApi.getbankaccounts` |
+| 入金履歴 | `GET /v1/me/getdeposits` | ✅ | `PrivateApi.getdeposits` |
+| 出金 | `POST /v1/me/withdraw` | ❌ | 実弾での動作確認が困難なため未実装 |
+| 出金履歴 | `GET /v1/me/getwithdrawals` | ✅ | `PrivateApi.getwithdrawals` |
 
 ### HTTP Private API — トレード
 
@@ -64,9 +64,9 @@
 | 親注文の一覧を取得 | `GET /v1/me/getparentorders` | ✅ | `PrivateApi.getparentorders` |
 | 親注文の詳細を取得 | `GET /v1/me/getparentorder` | ✅ | `PrivateApi.getparentorder` |
 | 約定の一覧を取得 | `GET /v1/me/getexecutions` | ✅ | `PrivateApi.getexecutions` |
-| 残高履歴を取得 | `GET /v1/me/getbalancehistory` | ❌ | - |
+| 残高履歴を取得 | `GET /v1/me/getbalancehistory` | ✅ | `PrivateApi.getbalancehistory` |
 | 建玉の一覧を取得 | `GET /v1/me/getpositions` | ✅ | `PrivateApi.getpositions`（信用（FX_BTC_JPY）取引のポジション確認に使用） |
-| 証拠金の変動履歴を取得 | `GET /v1/me/getcollateralhistory` | ❌ | - |
+| 証拠金の変動履歴を取得 | `GET /v1/me/getcollateralhistory` | ✅ | `PrivateApi.getcollateralhistory` |
 | 取引手数料を取得 | `GET /v1/me/gettradingcommission` | ✅ | `PrivateApi.gettradingcommission`（`commision`誤記を修正済み） |
 
 ### Realtime API (WebSocket)

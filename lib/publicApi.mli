@@ -37,3 +37,34 @@ val executions : product_code -> Json.t Lwt.t
 val getboardstate : product_code -> Json.t Lwt.t
 val gethealth : product_code -> string Lwt.t
 val getchats : product_code -> Json.t Lwt.t
+
+type funding_rate = {
+  current_funding_rate : float;
+  next_funding_rate_settledate : string;
+}
+
+val funding_rate_of_json : Json.t -> funding_rate
+val getfundingrate : product_code -> funding_rate Lwt.t
+
+type funding_rate_history_entry = {
+  calculation_date : string;
+  settlement_date : string;
+  rate : float;
+}
+
+(* [from_]/[to_]: 期間の開始/終了日時 (ISO8601)。[count]: 最大500件、省略時100件。 *)
+val getfundingratehistory :
+  ?from_:string ->
+  ?to_:string ->
+  ?count:int ->
+  product_code ->
+  funding_rate_history_entry list Lwt.t
+
+type corporate_leverage = {
+  current_max : float;
+  current_startdate : string;
+  next_max : float option;
+  next_startdate : string option;
+}
+
+val getcorporateleverage : unit -> corporate_leverage Lwt.t

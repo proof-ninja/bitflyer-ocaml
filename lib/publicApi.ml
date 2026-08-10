@@ -94,3 +94,66 @@ let getchats product_code =
   let query = [ ("from_date", product_code) ] in
   let path = "/v1/getchats" in
   ApiCommon.get_public path query
+
+type funding_rate = {
+  current_funding_rate : float;
+  next_funding_rate_settledate : string;
+}
+[@@deriving yojson]
+
+let funding_rate_of_json json =
+  match funding_rate_of_yojson json with
+  | Ok funding_rate -> funding_rate
+  | Error msg -> failwith (!%"PublicApi.funding_rate_of_json: %s" msg)
+
+let getfundingrate product_code =
+  let path = "/v1/getfundingrate" in
+  let query = [ ("product_code", product_code) ] in
+  ApiCommon.get_public path query >>= fun json ->
+  Lwt.return (funding_rate_of_json json)
+
+type funding_rate_history_entry = {
+  calculation_date : string;
+  settlement_date : string;
+  rate : float;
+}
+[@@deriving yojson]
+
+let funding_rate_history_entry_of_json json =
+  match funding_rate_history_entry_of_yojson json with
+  | Ok entry -> entry
+  | Error msg ->
+      failwith (!%"PublicApi.funding_rate_history_entry_of_json: %s" msg)
+
+let funding_rate_history_of_json json =
+  Json.Util.to_list json |> List.map funding_rate_history_entry_of_json
+
+(* [from_]/[to_]: 期間の開始/終了日時 (ISO8601)。[count]: 最大500件、省略時100件。 *)
+let getfundingratehistory ?from_ ?to_ ?count product_code =
+  let path = "/v1/getfundingratehistory" in
+  let query =
+    [ ("product_code", product_code) ]
+    |> list_add_opt (Option.map (fun s -> ("from", s)) from_)
+    |> list_add_opt (Option.map (fun s -> ("to", s)) to_)
+    |> list_add_opt (Option.map (fun c -> ("count", !%"%d" c)) count)
+  in
+  ApiCommon.get_public path query >>= fun json ->
+  Lwt.return (funding_rate_history_of_json json)
+
+type corporate_leverage = {
+  current_max : float;
+  current_startdate : string;
+  next_max : float option;
+  next_startdate : string option;
+}
+[@@deriving yojson]
+
+let corporate_leverage_of_json json =
+  match corporate_leverage_of_yojson json with
+  | Ok leverage -> leverage
+  | Error msg -> failwith (!%"PublicApi.corporate_leverage_of_json: %s" msg)
+
+let getcorporateleverage () =
+  let path = "/v1/getcorporateleverage" in
+  ApiCommon.get_public path [] >>= fun json ->
+  Lwt.return (corporate_leverage_of_json json)

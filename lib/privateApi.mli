@@ -47,3 +47,71 @@ val gettradingcommission : Auth.t -> product_code -> float Lwt.t
 
 (* 預入用アドレス取得 *)
 val getaddresses : Auth.t -> Account_statement.address list Lwt.t
+
+(* 証拠金の状態を取得 *)
+val getcollateral : Auth.t -> Assets.collateral_status Lwt.t
+
+(* 証拠金の数量（通貨別）を取得 *)
+val getcollateralaccount : Auth.t -> Assets.collateral_account list Lwt.t
+
+(* 仮想通貨預入履歴 *)
+val getcoinins :
+  Auth.t ->
+  ?count:int ->
+  ?before:int ->
+  ?after:int ->
+  unit ->
+  Account_statement.coin_in list Lwt.t
+
+(* 仮想通貨送付履歴 *)
+val getcoinouts :
+  Auth.t ->
+  ?count:int ->
+  ?before:int ->
+  ?after:int ->
+  unit ->
+  Account_statement.coin_out list Lwt.t
+
+(* 銀行口座一覧取得 *)
+val getbankaccounts : Auth.t -> Account_statement.bank_account list Lwt.t
+
+(* 入金履歴 *)
+val getdeposits :
+  Auth.t ->
+  ?count:int ->
+  ?before:int ->
+  ?after:int ->
+  unit ->
+  Account_statement.deposit list Lwt.t
+
+(* 出金履歴 (出金の実行そのもの(POST /v1/me/withdraw)は未実装) *)
+val getwithdrawals :
+  Auth.t ->
+  ?count:int ->
+  ?before:int ->
+  ?after:int ->
+  ?message_id:string ->
+  unit ->
+  Account_statement.withdrawal list Lwt.t
+
+(* 残高履歴を取得 *)
+val getbalancehistory :
+  Auth.t ->
+  ?currency_code:string ->
+  ?count:int ->
+  ?before:int ->
+  ?after:int ->
+  unit ->
+  Trade.balance_history_entry list Lwt.t
+
+(* 証拠金の変動履歴を取得 *)
+val getcollateralhistory :
+  Auth.t ->
+  ?count:int ->
+  ?before:int ->
+  ?after:int ->
+  unit ->
+  Trade.collateral_history_entry list Lwt.t
+
+(* このAPIキーで呼出可能なHTTP Private APIのpathの一覧を取得する *)
+val getpermissions : Auth.t -> string list Lwt.t

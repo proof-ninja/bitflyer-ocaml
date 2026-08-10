@@ -178,3 +178,70 @@ let getpositions auth product_code =
   let query = [ ("product_code", product_code) ] in
   ApiCommon.get auth path query >>= fun json ->
   Lwt.return (positions_of_json json)
+
+(* 残高履歴 (入出金・約定・手数料等、JPY残高の変動明細) *)
+type balance_history_entry = {
+  id : int;
+  trade_date : string; (* JST *)
+  event_date : string; (* UTC *)
+  product_code : string;
+  currency_code : string;
+  trade_type : string;
+  price : float;
+  amount : float;
+  quantity : float;
+  commission : float;
+  balance : float;
+  order_id : string;
+}
+[@@deriving yojson]
+
+let balance_history_entry_of_json json =
+  match balance_history_entry_of_yojson json with
+  | Ok entry -> entry
+  | Error msg -> failwith (!%"Trade.balance_history_entry_of_json: %s" msg)
+
+let balance_history_of_json json =
+  Json.Util.to_list json |> List.map balance_history_entry_of_json
+
+let getbalancehistory auth ?currency_code ?count ?before ?after () =
+  let path = "/v1/me/getbalancehistory" in
+  let query =
+    []
+    |> list_add_opt (Option.map (fun s -> ("currency_code", s)) currency_code)
+    |> list_add_opt (Option.map (fun c -> ("count", !%"%d" c)) count)
+    |> list_add_opt (Option.map (fun x -> ("before", !%"%d" x)) before)
+    |> list_add_opt (Option.map (fun x -> ("after", !%"%d" x)) after)
+  in
+  ApiCommon.get auth path query >>= fun json ->
+  Lwt.return (balance_history_of_json json)
+
+(* 証拠金の変動履歴 *)
+type collateral_history_entry = {
+  id : int;
+  currency_code : string;
+  change : float;
+  amount : float; (* 変動後の残高 *)
+  reason_code : string;
+  date : string;
+}
+[@@deriving yojson]
+
+let collateral_history_entry_of_json json =
+  match collateral_history_entry_of_yojson json with
+  | Ok entry -> entry
+  | Error msg -> failwith (!%"Trade.collateral_history_entry_of_json: %s" msg)
+
+let collateral_history_of_json json =
+  Json.Util.to_list json |> List.map collateral_history_entry_of_json
+
+let getcollateralhistory auth ?count ?before ?after () =
+  let path = "/v1/me/getcollateralhistory" in
+  let query =
+    []
+    |> list_add_opt (Option.map (fun c -> ("count", !%"%d" c)) count)
+    |> list_add_opt (Option.map (fun x -> ("before", !%"%d" x)) before)
+    |> list_add_opt (Option.map (fun x -> ("after", !%"%d" x)) after)
+  in
+  ApiCommon.get auth path query >>= fun json ->
+  Lwt.return (collateral_history_of_json json)
