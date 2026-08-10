@@ -124,7 +124,25 @@ let getdeposits auth ?count ?before ?after () =
   let query = pagination_query ?count ?before ?after () in
   ApiCommon.get auth path query |> Lwt.map deposits_of_json
 
-(* 出金履歴 (出金の実行そのもの(POST /v1/me/withdraw)は未実装) *)
+(* 出金を実行する。[bank_account_id]はgetbankaccountsで取得したid。
+   [code]は二段階認証を有効にしている場合の確認コード。現時点でcurrency_codeは
+   "JPY"のみ対応(公式ドキュメント記載)。実際にお金が動く操作なので、他のPOST系API
+   (sendchildorder等)と同じく戻り値はraw JSONのまま返す
+   (成功時は{"message_id": <string>}、失敗時は{"status": <負の数>, "error_message": <string>})。 *)
+let withdraw auth ~currency_code ~bank_account_id ~amount ?code () =
+  let path = "/v1/me/withdraw" in
+  let fields =
+    [
+      ("currency_code", `String currency_code);
+      ("bank_account_id", `Int bank_account_id);
+      ("amount", `Float amount);
+    ]
+    @ match code with Some c -> [ ("code", `String c) ] | None -> []
+  in
+  let data = `Assoc fields |> Json.to_string in
+  ApiCommon.post auth path data
+
+(* 出金履歴 *)
 type withdrawal = {
   id : int;
   order_id : string;

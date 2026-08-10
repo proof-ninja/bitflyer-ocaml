@@ -84,7 +84,19 @@ val getdeposits :
   unit ->
   Account_statement.deposit list Lwt.t
 
-(* 出金履歴 (出金の実行そのもの(POST /v1/me/withdraw)は未実装) *)
+(* 出金を実行する(実際にお金が動く操作)。[bank_account_id]はgetbankaccountsで
+   取得したid。戻り値はraw JSON(成功時は{"message_id": <string>}、
+   失敗時は{"status": <負の数>, "error_message": <string>})。 *)
+val withdraw :
+  Auth.t ->
+  currency_code:string ->
+  bank_account_id:int ->
+  amount:float ->
+  ?code:string ->
+  unit ->
+  Json.t Lwt.t
+
+(* 出金履歴 *)
 val getwithdrawals :
   Auth.t ->
   ?count:int ->

@@ -48,7 +48,7 @@
 | 仮想通貨送付履歴 | `GET /v1/me/getcoinouts` | ✅ | `PrivateApi.getcoinouts` |
 | 銀行口座一覧取得 | `GET /v1/me/getbankaccounts` | ✅ | `PrivateApi.getbankaccounts` |
 | 入金履歴 | `GET /v1/me/getdeposits` | ✅ | `PrivateApi.getdeposits` |
-| 出金 | `POST /v1/me/withdraw` | ❌ | 実弾での動作確認が困難なため未実装 |
+| 出金 | `POST /v1/me/withdraw` | ⚠️ | `PrivateApi.withdraw`（実弾での動作確認は未実施） |
 | 出金履歴 | `GET /v1/me/getwithdrawals` | ✅ | `PrivateApi.getwithdrawals` |
 
 ### HTTP Private API — トレード

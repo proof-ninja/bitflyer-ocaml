@@ -17,6 +17,7 @@ let getcoinins = Account_statement.getcoinins
 let getcoinouts = Account_statement.getcoinouts
 let getbankaccounts = Account_statement.getbankaccounts
 let getdeposits = Account_statement.getdeposits
+let withdraw = Account_statement.withdraw
 let getwithdrawals = Account_statement.getwithdrawals
 let getbalancehistory = Trade.getbalancehistory
 let getcollateralhistory = Trade.getcollateralhistory
