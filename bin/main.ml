@@ -13,11 +13,12 @@ let watch_and_buy auth ~product_code ~threshold ~size =
   Lwt_stream.iter_s
     (function
       | Realtime.Ticker ticker when ticker.PublicApi.best_bid >= threshold ->
-         Log.info "best_bid %f >= %f: sending market buy order"
-           ticker.PublicApi.best_bid threshold;
-         PrivateApi.sendchildorder auth product_code Market Buy size >>= fun json ->
-         Log.debug "order response: %s" (Json.to_string json);
-         Lwt.return ()
+          Log.info "best_bid %f >= %f: sending market buy order"
+            ticker.PublicApi.best_bid threshold;
+          PrivateApi.sendchildorder auth product_code Market Buy size
+          >>= fun json ->
+          Log.debug "order response: %s" (Json.to_string json);
+          Lwt.return ()
       | Realtime.Ticker _ | Realtime.Board _ -> Lwt.return ())
     stream
 
@@ -26,14 +27,14 @@ let watch_and_buy auth ~product_code ~threshold ~size =
 
 let () =
   Log.set_log_level Log.DEBUG;
-(*  buy auth "BTC_JPY" 0.001;*)
-(*  let latest = get_executions auth "BTC_JPY" |> List.hd in
+  (*  buy auth "BTC_JPY" 0.001;*)
+  (*  let latest = get_executions auth "BTC_JPY" |> List.hd in
   ignore latest*)
   try
-    Lwt_main.run begin
+    Lwt_main.run
+      begin
         PublicApi.getboard "BTC_JPY" >>= fun board ->
         print_endline (Json.show (PublicApi.board_to_yojson board));
         return ()
-end
-  with
-  | e -> prerr_endline (Printexc.to_string e)
+      end
+  with e -> prerr_endline (Printexc.to_string e)

@@ -1,4 +1,5 @@
 type t
+
 val now : unit -> t
 val to_millisec : t -> int
 val to_sec : t -> float

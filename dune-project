@@ -7,15 +7,15 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github proof-ninja/bitflyer-ocaml))
 
-(authors "Author Name")
+(authors "Yoshihiro Imai")
 
-(maintainers "Maintainer Name")
+(maintainers "Yoshihiro Imai")
 
 (license MIT)
 
-(documentation https://url/to/documentation)
+(documentation https://github.com/proof-ninja/bitflyer-ocaml/)
 
 (package
  (name bitflyer)

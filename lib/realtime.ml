@@ -19,20 +19,23 @@ let client_of_uri uri =
 
 let connect () =
   let uri = Uri.of_string endpoint in
-  client_of_uri uri >>= fun client ->
-  Websocket_lwt_unix.connect client uri
+  client_of_uri uri >>= fun client -> Websocket_lwt_unix.connect client uri
 
 let next_id =
   let counter = ref 0 in
-  fun () -> incr counter; !counter
+  fun () ->
+    incr counter;
+    !counter
 
 let send_subscribe conn channel =
-  let request = `Assoc [
-      ("jsonrpc", `String "2.0");
-      ("method", `String "subscribe");
-      ("params", `Assoc [("channel", `String channel)]);
-      ("id", `Int (next_id ()));
-    ]
+  let request =
+    `Assoc
+      [
+        ("jsonrpc", `String "2.0");
+        ("method", `String "subscribe");
+        ("params", `Assoc [ ("channel", `String channel) ]);
+        ("id", `Int (next_id ()));
+      ]
   in
   Websocket_lwt_unix.write conn
     (Websocket.Frame.create ~content:(Json.to_string request) ())
@@ -41,9 +44,9 @@ let send_subscribe conn channel =
    購読で届く lightning_board_snapshot/lightning_board のメッセージは
    HTTP の板情報 (GET /v1/getboard) と同じ形なので [PublicApi.board] を再利用する。 *)
 type orderbook = {
-    mid_price: float;
-    bids: (float * float) list; (* (price, size) *)
-    asks: (float * float) list; (* (price, size) *)
+  mid_price : float;
+  bids : (float * float) list; (* (price, size) *)
+  asks : (float * float) list; (* (price, size) *)
 }
 
 let empty_orderbook = { mid_price = 0.0; bids = []; asks = [] }
@@ -58,32 +61,37 @@ let best_ask orderbook =
 let apply_levels ~compare (levels : PublicApi.level list) current =
   List.fold_left
     (fun current (level : PublicApi.level) ->
-       let current = List.filter (fun (price, _) -> price <> level.price) current in
-       if level.size = 0.0 then current else (level.price, level.size) :: current)
+      let current =
+        List.filter (fun (price, _) -> price <> level.price) current
+      in
+      if level.size = 0.0 then current else (level.price, level.size) :: current)
     current levels
   |> List.sort (fun (p1, _) (p2, _) -> compare p1 p2)
 
 let apply_board_message (message : PublicApi.board) (orderbook : orderbook) =
   {
     mid_price = message.mid_price;
-    bids = apply_levels ~compare:(fun p1 p2 -> Stdlib.compare p2 p1) message.bids orderbook.bids;
+    bids =
+      apply_levels
+        ~compare:(fun p1 p2 -> Stdlib.compare p2 p1)
+        message.bids orderbook.bids;
     asks = apply_levels ~compare:Stdlib.compare message.asks orderbook.asks;
   }
 
-type update =
-  | Ticker of PublicApi.ticker
-  | Board of orderbook
+type update = Ticker of PublicApi.ticker | Board of orderbook
 
 let channel_message_of_frame (frame : Websocket.Frame.t) =
   match frame.opcode with
-  | Websocket.Frame.Opcode.Text ->
-     let json = Json.from_string frame.content in
-     (match Json.Util.member "method" json with
+  | Websocket.Frame.Opcode.Text -> (
+      let json = Json.from_string frame.content in
+      match Json.Util.member "method" json with
       | `String "channelMessage" ->
-         let params = Json.Util.member "params" json in
-         let channel = Json.Util.member "channel" params |> Json.Util.to_string in
-         let message = Json.Util.member "message" params in
-         Some (channel, message)
+          let params = Json.Util.member "params" json in
+          let channel =
+            Json.Util.member "channel" params |> Json.Util.to_string
+          in
+          let message = Json.Util.member "message" params in
+          Some (channel, message)
       | _ -> None)
   | _ -> None
 
@@ -97,7 +105,8 @@ let read_timeout = 90.0
 type read_result = Received of Websocket.Frame.t | Timed_out
 
 let read_with_timeout conn =
-  Lwt.pick [
+  Lwt.pick
+    [
       (Websocket_lwt_unix.read conn >|= fun frame -> Received frame);
       (Lwt_unix.sleep read_timeout >|= fun () -> Timed_out);
     ]
@@ -117,24 +126,34 @@ let updates product_code =
   let rec next () =
     read_with_timeout conn >>= function
     | Timed_out ->
-       Lwt.fail_with (!%"Realtime: no data received within %.0fs, treating connection as dead" read_timeout)
-    | Received frame ->
-       (match frame.Websocket.Frame.opcode with
+        Lwt.fail_with
+          (!%"Realtime: no data received within %.0fs, treating connection as \
+              dead"
+             read_timeout)
+    | Received frame -> (
+        match frame.Websocket.Frame.opcode with
         | Websocket.Frame.Opcode.Ping ->
-           Websocket_lwt_unix.write conn
-             (Websocket.Frame.create ~opcode:Websocket.Frame.Opcode.Pong ())
-           >>= next
-        | Websocket.Frame.Opcode.Close -> Lwt.fail_with "Realtime: server closed the connection"
-        | _ ->
-           (match channel_message_of_frame frame with
+            Websocket_lwt_unix.write conn
+              (Websocket.Frame.create ~opcode:Websocket.Frame.Opcode.Pong ())
+            >>= next
+        | Websocket.Frame.Opcode.Close ->
+            Lwt.fail_with "Realtime: server closed the connection"
+        | _ -> (
+            match channel_message_of_frame frame with
             | Some (channel, message) when channel = ticker_channel ->
-               Lwt.return_some (Ticker (PublicApi.ticker_of_json message))
+                Lwt.return_some (Ticker (PublicApi.ticker_of_json message))
             | Some (channel, message) when channel = board_snapshot_channel ->
-               orderbook := apply_board_message (PublicApi.board_of_json message) empty_orderbook;
-               Lwt.return_some (Board !orderbook)
+                orderbook :=
+                  apply_board_message
+                    (PublicApi.board_of_json message)
+                    empty_orderbook;
+                Lwt.return_some (Board !orderbook)
             | Some (channel, message) when channel = board_channel ->
-               orderbook := apply_board_message (PublicApi.board_of_json message) !orderbook;
-               Lwt.return_some (Board !orderbook)
+                orderbook :=
+                  apply_board_message
+                    (PublicApi.board_of_json message)
+                    !orderbook;
+                Lwt.return_some (Board !orderbook)
             | Some _ | None -> next ()))
   in
   Lwt.return (Lwt_stream.from next)
