@@ -19,8 +19,9 @@
 
 (package
  (name bitflyer)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "OCaml client for the bitFlyer cryptocurrency exchange API")
+ (description
+  "Provides typed bindings to bitFlyer's public and private HTTP APIs (market data, orders, positions, account statements) and the realtime WebSocket API (ticker, orderboard, executions, and authenticated order-event channels). Handles HMAC-SHA256 request signing and rate limiting automatically.")
  (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson ppx_deriving_yojson hacl-star hex dolog lwt_ppx websocket-lwt-unix ipaddr)
  (tags
   (topics "to describe" your project)))
