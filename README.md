@@ -75,8 +75,8 @@
 |---|---|---|
 | Ticker (`lightning_ticker_<product_code>`) | ✅ | `Realtime.updates`（`Ticker of PublicApi.ticker`） |
 | 板情報 (`lightning_board_snapshot_<product_code>`, `lightning_board_<product_code>`) | ✅ | `Realtime.updates`（`Board of Realtime.orderbook`。差分を内部で積算し常に最新の板状態を返す） |
-| 約定 (`lightning_executions_<product_code>`) | ❌ | - |
-| チャイルドオーダー・親注文イベント (`child_order_events`, `parent_order_events`) | ❌ | - |
+| 約定 (`lightning_executions_<product_code>`) | ✅ | `Realtime.execution_updates` |
+| チャイルドオーダー・親注文イベント (`child_order_events`, `parent_order_events`) | ⚠️ | `Realtime.child_order_events`, `Realtime.parent_order_events`（WS認証を含め実際のAPIキーでの動作確認は未実施） |
 
 既知の制約:
 - 接続を明示的に閉じる手段は未実装（ストリームの消費をやめても裏の接続は残る）

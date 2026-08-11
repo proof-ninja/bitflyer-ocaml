@@ -12,11 +12,19 @@ let from_file ?(filename = default_filename) () =
   { api_key; secret }
 
 let auth () = from_file ()
+let api_key auth = auth.api_key
 
 let sign auth timestamp method_ path body =
   let text = !%"%d%s%s%s" (Datetime.to_millisec timestamp) method_ path body in
   let secret = auth.secret in
   Hacl_star.EverCrypt.HMAC.mac ~alg:SHA2_256 ~key:(Bytes.of_string secret)
+    ~msg:(Bytes.of_string text)
+  |> Hex.of_bytes |> Hex.show
+
+let sign_realtime auth ~timestamp ~nonce =
+  let text = !%"%d%s" timestamp nonce in
+  Hacl_star.EverCrypt.HMAC.mac ~alg:SHA2_256
+    ~key:(Bytes.of_string auth.secret)
     ~msg:(Bytes.of_string text)
   |> Hex.of_bytes |> Hex.show
 
