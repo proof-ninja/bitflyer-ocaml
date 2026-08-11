@@ -7,23 +7,23 @@ description:
 maintainer: ["Yoshihiro Imai"]
 authors: ["Yoshihiro Imai"]
 license: "MIT"
-tags: ["topics" "to describe" "your" "project"]
+tags: ["cryptocurrency" "exchange" "trading" "api" "websocket"]
 homepage: "https://github.com/proof-ninja/bitflyer-ocaml"
 doc: "https://github.com/proof-ninja/bitflyer-ocaml/"
 bug-reports: "https://github.com/proof-ninja/bitflyer-ocaml/issues"
 depends: [
-  "ocaml"
+  "ocaml" {>= "4.14"}
   "dune" {>= "3.4"}
   "cohttp"
   "lwt"
   "cohttp-lwt-unix"
   "yojson"
   "ppx_deriving_yojson"
-  "hacl-star"
+  "hacl-star" {>= "0.7.2"}
   "hex"
   "dolog"
   "lwt_ppx"
-  "websocket-lwt-unix"
+  "websocket-lwt-unix" {>= "2.17"}
   "ipaddr"
   "odoc" {with-doc}
 ]

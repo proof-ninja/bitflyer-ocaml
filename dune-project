@@ -22,8 +22,24 @@
  (synopsis "OCaml client for the bitFlyer cryptocurrency exchange API")
  (description
   "Provides typed bindings to bitFlyer's public and private HTTP APIs (market data, orders, positions, account statements) and the realtime WebSocket API (ticker, orderboard, executions, and authenticated order-event channels). Handles HMAC-SHA256 request signing and rate limiting automatically.")
- (depends ocaml dune cohttp lwt cohttp-lwt-unix yojson ppx_deriving_yojson hacl-star hex dolog lwt_ppx websocket-lwt-unix ipaddr)
+ (depends
+  (ocaml
+   (>= "4.14"))
+  dune
+  cohttp
+  lwt
+  cohttp-lwt-unix
+  yojson
+  ppx_deriving_yojson
+  (hacl-star
+   (>= "0.7.2"))
+  hex
+  dolog
+  lwt_ppx
+  (websocket-lwt-unix
+   (>= "2.17"))
+  ipaddr)
  (tags
-  (topics "to describe" your project)))
+  ("cryptocurrency" "exchange" "trading" "api" "websocket")))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
