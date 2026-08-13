@@ -33,7 +33,8 @@
   ppx_deriving_yojson
   (hacl-star
    (>= "0.7.2"))
-  hex
+  (hex
+   (>= "1.3.0"))
   dolog
   lwt_ppx
   (websocket-lwt-unix
