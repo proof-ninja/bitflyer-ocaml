@@ -31,6 +31,11 @@ let ifd_buysell auth currency_pair (price1, amount1) (price2, amount2) =
 type side = Common.side = Buy | Sell
 type order_type = Common.order_type = Market | Limit of float
 
+(* bitFlyerのAPIエラー(HTTPステータスが2xx以外、かつ本文が
+   {"status": <負の整数>, "error_message": "..."} 形式)を表す。呼び出し側が
+   statusコードでエラーの種類(一時的か恒久的か)を判別できるよう公開する。 *)
+exception Api_error = ApiCommon.Api_error
+
 module Datetime = Datetime
 module Auth = Auth
 module Assets = Assets

@@ -23,6 +23,39 @@ let order_paths =
 let json_of_body body =
   match String.trim body with "" -> `Null | body -> Json.from_string body
 
+(* bitFlyerのAPIエラーは本文が {"status": <負の整数>, "error_message": "...",
+   "data": null} という共通形式で返る(例: {"status":-208,"error_message":
+   "Order is not accepted. Please try again later.","data":null})。
+   [status]はbitFlyer独自のエラーコードで、呼び出し元がエラーの種類
+   (一時的な混雑なのか、恒久的な拒否なのか)を判別するのに使う。 *)
+exception Api_error of int * string
+
+let () =
+  Printexc.register_printer (function
+    | Api_error (status, error_message) ->
+        Some (!%"Bitflyer.ApiCommon.Api_error(status=%d, %s)" status error_message)
+    | _ -> None)
+
+let api_error_of_body body_str =
+  try
+    let open Json.Util in
+    let json = Json.from_string body_str in
+    let status = member "status" json |> to_int in
+    let error_message = member "error_message" json |> to_string in
+    Some (Api_error (status, error_message))
+  with _ -> None
+
+(* Http.get/postはHTTPステータスが2xx以外のときHttp.ApiErrorを投げる。本文が
+   上記のbitFlyerエラー形式でパースできればより詳細なApi_errorに載せ替え、
+   パースできなければ(想定外の形式の応答など)元の例外をそのまま伝播させる。 *)
+let reraise_as_api_error f =
+  Lwt.catch f (function
+    | Http.ApiError (_, _, _, body) as exn -> (
+        match api_error_of_body body with
+        | Some e -> Lwt.fail e
+        | None -> Lwt.fail exn)
+    | exn -> Lwt.fail exn)
+
 let get_public pathname query =
   let uri =
     Uri.make ~scheme:"https" ~host ~path:pathname () |> fun uri ->
@@ -39,7 +72,8 @@ let get auth pathname query =
   let path = Uri.path_and_query uri in
   let headers = Auth.make_header auth "GET" path "" in
   RateLimiter.acquire global_limiter >>= fun () ->
-  Http.get ~headers uri >>= fun body -> json_of_body body |> Lwt.return
+  reraise_as_api_error (fun () -> Http.get ~headers uri)
+  >>= fun body -> json_of_body body |> Lwt.return
 
 let post auth path data =
   let uri = Uri.make ~scheme:"https" ~host ~path () in
@@ -48,4 +82,5 @@ let post auth path data =
   (if List.mem path order_paths then RateLimiter.acquire order_limiter
    else Lwt.return ())
   >>= fun () ->
-  Http.post ~headers uri data >>= fun body -> json_of_body body |> Lwt.return
+  reraise_as_api_error (fun () -> Http.post ~headers uri data)
+  >>= fun body -> json_of_body body |> Lwt.return

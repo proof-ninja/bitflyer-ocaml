@@ -7,9 +7,9 @@ let json_of_order product_code order side size : Json.t =
         [
           ("product_code", `String product_code);
           ("child_order_type", `String "LIMIT");
-          ("price", `String (string_of_float price));
+          ("price", `Float price);
           ("side", `String (string_of_side side));
-          ("size", `String (string_of_float size));
+          ("size", `Float size);
         ]
   | Market ->
       `Assoc
@@ -17,7 +17,7 @@ let json_of_order product_code order side size : Json.t =
           ("product_code", `String product_code);
           ("child_order_type", `String "MARKET");
           ("side", `String (string_of_side side));
-          ("size", `String (string_of_float size));
+          ("size", `Float size);
         ]
 
 type placed_order = {
